@@ -2,7 +2,7 @@ import tensorflow as tf
 import pandas as pd
 import numpy as np
 import cv2
-from detector import Detector
+from VggNet import Detector
 from util import load_image
 
 import skimage.io
@@ -11,11 +11,11 @@ import matplotlib.pyplot as plt
 import os
 #import ipdb
 
-testset_path = '../data/caltech/test.pickle'
-label_dict_path = '../data/caltech/label_dict.pickle'
+testset_path = '../data/mydata/validation.pickle'
+label_dict_path = '../data/mydata/label_dict.pickle'
 
 weight_path = '../models/mymodel/caffe_layers_value.pickle'
-model_path = '../models/mymodel/model-4'
+model_path = '../models/mymodel/model-0'
 
 batch_size = 1
 
@@ -27,8 +27,7 @@ images_tf = tf.placeholder( tf.float32, [None, 224, 224, 3], name="images")
 labels_tf = tf.placeholder( tf.int64, [None], name='labels')
 
 detector = Detector( weight_path, n_labels )
-c1,c2,c3,c4,conv5, conv6, gap, output = detector.inference( images_tf )
-classmap = detector.get_classmap( labels_tf, conv6 )
+c1,c2,c3,c4,conv5, conv6, fc6, output = detector.inference( images_tf )
 
 sess = tf.InteractiveSession()
 saver = tf.train.Saver()
@@ -64,44 +63,17 @@ for start, end in zip(
                 feed_dict={
                     images_tf: current_images
                     })
-    classmap_vals = sess.run(
-            classmap,
-            feed_dict={
-                labels_tf: label_predictions,
-                conv6: conv6_val
-                })
-
-    classmap_answer = sess.run(
-            classmap,
-            feed_dict={
-                labels_tf: current_labels,
-                conv6: conv6_val
-                })
-
-    classmap_vis = map(lambda x: ((x-x.min())/(x.max()-x.min())), classmap_answer)
     acc=0
     for j,row in enumerate(val_top_3):
         if current_labels[j] in row:
             acc+=1
-    #acc = (label_predictions == current_labels).sum()
     n_correct += acc
     n_data += len(current_data)
-    for vis, ori,ori_path, l_name,predictIndex in zip(classmap_vis, current_images, current_image_paths, current_label_names,label_predictions):
+    for ori,ori_path, l_name,predictIndex in zip(current_images, current_image_paths, current_label_names,label_predictions):
         print 'ture label:'+l_name+'    predicted label:'+ label_dict.index[predictIndex]
-        img_origin=plt.imread(ori_path)
-        plt.subplot(121)
-        plt.imshow(img_origin)
-        plt.subplot(122)
-        plt.imshow( ori )
-        plt.imshow( vis, cmap=plt.cm.jet, alpha=0.5, interpolation='nearest' )
-        #plt.subplot(122)
-        #plt.imshow( vis)
+        print('origin image path: '+ori_path)
+        plt.imshow(ori)
         plt.show()
-
-        #vis_path = '../results/'+ ori_path.split('/')[-1]
-        #vis_path_ori = '../results/'+ori_path.split('/')[-1].split('.')[0]+'.ori.jpg'
-        #skimage.io.imsave( vis_path, vis )
-        #skimage.io.imsave( vis_path_ori, ori )
 acc_all = n_correct / float(n_data)
 print "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"
 print 'testDataNum:' + str(n_data) + '\tcorrectNum:'+str(n_correct)+'\tacc:' + str(acc_all)
