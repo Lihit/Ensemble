@@ -90,7 +90,7 @@ class Detector():
                 shape=b.shape,
                 initializer=tf.constant_initializer(b))
 
-            fc = tf.nn.bias_add(tf.matmul(x, cw), b, name=scope)
+            fc = tf.nn.relu(tf.nn.bias_add(tf.matmul(x, cw), b, name=scope))
 
         return fc
 
@@ -152,7 +152,7 @@ class Detector():
         conv6 = self.new_conv_layer(relu5_3, [3, 3, 512, 1024], "conv6")
 
         fc6 = self.fc_layer(conv6, 'fc6')
-
+        fc6 = tf.nn.dropout(fc6, 0.5)
         output = self.new_fc_layer(fc6, 4096, self.n_labels, 'output')
 
         return pool1, pool2, pool3, pool4, relu5_3, conv6, fc6, output

@@ -30,8 +30,6 @@ def main():
     momentum = 0.9
     batch_size = 60
 
-    dataset_path = '/home/tensor/tensor/scene/DataSet/train'
-
     caltech_path = '../data/mydata'
     trainset_path = '../data/mydata/train.pickle'
     testset_path = '../data/mydata/validation.pickle'
@@ -199,9 +197,9 @@ def main():
             n_data += len(current_data)
 
         acc_all = n_correct / float(n_data)
-        f_log_acc.write('epoch:' + str(epoch) + '\tacc:' + str(acc_all) + '\n')
+        f_log_acc.write('epoch:' + str(epoch) +'\ttestDataNum:' + str(n_data) + '\tcorrectNum:'+str(n_correct)+'\tacc:' + str(acc_all))
         print "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"
-        print 'epoch:' + str(epoch) + '\tacc:' + str(acc_all) + '\n'
+        print 'epoch:' + str(epoch) +'\ttestDataNum:' + str(n_data) + '\tcorrectNum:'+str(n_correct)+'\tacc:' + str(acc_all)
         print "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"
         saver.save(sess, os.path.join(
             model_path, 'model'), global_step=0)

@@ -70,7 +70,7 @@ for start, end in zip(
     n_correct += acc
     n_data += len(current_data)
     for ori,ori_path, l_name,predictIndex in zip(current_images, current_image_paths, current_label_names,label_predictions):
-        print 'ture label:'+l_name+'    predicted label:'+ label_dict.index[predictIndex]
+        print 'ture label:'+l_name+'\tpredicted label:'+ label_dict.index[predictIndex]
         print('origin image path: '+ori_path)
         plt.imshow(ori)
         plt.show()
