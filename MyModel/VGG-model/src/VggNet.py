@@ -150,8 +150,11 @@ class Detector():
         relu5_3 = self.conv_layer(relu5_2, "conv5_3")
 
         conv6 = self.new_conv_layer(relu5_3, [3, 3, 512, 1024], "conv6")
-
-        fc6 = self.fc_layer(conv6, 'fc6')
+        conv6_shape = conv6.get_shape().as_list()
+        nodesNUm = conv6_shape[1] * conv6_shape[2] * conv6_shape[3]
+        conv6_reshaped = tf.reshape(conv6, [conv6_shape[0], nodesNUm])
+        fc6 = self.new_fc_layer(conv6_reshaped, nodesNUm, 4096, 'fc6')
+        fc6 = tf.nn.relu(fc6)
         fc6 = tf.nn.dropout(fc6, 0.5)
         output = self.new_fc_layer(fc6, 4096, self.n_labels, 'output')
 

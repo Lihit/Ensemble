@@ -5,13 +5,12 @@ import pandas as pd
 from detector import Detector
 from util import load_image
 import os
-import ipdb
 import csv
 
 weight_path = '../models/mymodel/caffe_layers_value.pickle'
 model_path = '../models/mymodel/'
-pretrained_model_path = None  # '../models/caltech256/model-0'
-n_epochs = 6
+pretrained_model_path ='../models/mymodel/model-5'
+n_epochs = 5
 init_learning_rate = 0.01
 weight_decay_rate = 0.0005
 momentum = 0.9
@@ -37,7 +36,7 @@ if not os.path.exists(trainset_path):
     r = csv.reader(f)
     for row in r:
         labels.append(row[0])
-        label_names.append(row[1])
+        label_names.append(row[-1])
     label_dict = pd.Series(labels, index=label_names)
     #label_dict -= 1
     n_labels = len(label_dict)
@@ -118,7 +117,8 @@ testset.index = range(len(testset))
 #trainset = pd.concat( [trainset, trainset2] )
 # We lack the number of training set. Let's use some of the test images
 
-f_log = open('../results/log.caltech256.txt', 'w')
+f_log_acc = open('../results/log.sceneAcc.txt', 'w')
+f_log_loss = open('../results/log.sceneLoss.txt', 'w')
 
 iterations = 0
 loss_list = []
@@ -165,6 +165,7 @@ for epoch in range(n_epochs):
             print "Training Loss:", np.mean(loss_list)
             print "\n"
             loss_list = []
+            f_log_loss.write(" Epoch:"+str(epoch)+" Iteration:"+str(iterations)+ " Accuracy:"+str(acc)+" Training Loss:"+str(np.mean(loss_list)))
 
     n_correct = 0
     n_data = 0
@@ -194,10 +195,12 @@ for epoch in range(n_epochs):
         n_data += len(current_data)
 
     acc_all = n_correct / float(n_data)
-    f_log.write('epoch:' + str(epoch) + '\tacc:' + str(acc_all) + '\n')
+    f_log_acc.write('epoch:' + str(epoch) + '\tacc:' + str(acc_all) + '\n')
     print "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"
     print 'epoch:' + str(epoch) + '\tacc:' + str(acc_all) + '\n'
     print "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"
     if epoch == (n_epochs-1):
         saver.save(sess, os.path.join(model_path, 'model'), global_step=epoch)
     init_learning_rate *= 0.99
+f_log_acc.close()
+f_log_loss.close()
